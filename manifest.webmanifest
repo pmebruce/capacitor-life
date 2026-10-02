@@ -1,0 +1,23 @@
+{
+  "name": "電容壽命計算器",
+  "short_name": "電容壽命",
+  "description": "鋁電解電容壽命與紋波自熱估算",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eaf0f3",
+  "theme_color": "#102b40",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "id": "./"
+}

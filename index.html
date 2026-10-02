@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#102b40">
+  <meta name="description" content="鋁電解電容壽命、允許溫度與紋波（ripple）電流自熱估算工具">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="./manifest.webmanifest?v=4">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+  <link rel="stylesheet" href="./style.css">
+  <title>電容壽命計算器</title>
+</head>
+<body>
+  <main class="shell">
+    <header class="app-header">
+      <div class="brand"><img class="mark" src="./icon-192.png" alt="" width="42" height="42"><div><h1>電容壽命計算器</h1><p>鋁電解電容 · 工程初估</p></div></div>
+      <span class="offline">PWA</span>
+    </header>
+
+    <div class="workspace">
+      <section class="panel controls" aria-labelledby="inputs-title">
+        <div class="section-head"><div><span class="eyebrow">01 / 輸入條件</span><h2 id="inputs-title">壽命條件</h2></div><button id="reset" type="button" class="quiet">重設範例</button></div>
+
+        <fieldset class="mode-picker"><legend>計算方式</legend>
+          <label><input type="radio" name="mode" value="simple" checked><span>溫度加速法</span></label>
+          <label><input type="radio" name="mode" value="measured"><span>自熱溫升修正<small>L₀：未含額定紋波（ripple）</small></span></label>
+          <label><input type="radio" name="mode" value="rated"><span>額定紋波（ripple）修正<small>Lᵣ：已含額定紋波（ripple）</small></span></label>
+        </fieldset>
+        <p id="modeHelp" class="mode-help">以 10°C 壽命約加倍的經驗式估算。尚未計入紋波（ripple）電流造成的內部溫升。</p>
+
+        <div class="field-grid">
+          <label class="field"><span>規格耐久壽命 <em>L₀ / Lᵣ</em></span><div class="unit-input"><input id="lo" type="number" min="1" step="1" inputmode="decimal" value="2000"><b>小時</b></div></label>
+          <label class="field"><span>規格最高溫度 <em>T₀</em></span><div class="unit-input"><input id="to" type="number" min="40" max="150" step="0.1" inputmode="decimal" value="105"><b>°C</b></div></label>
+          <label class="field"><span>實際周圍溫度 <em>Tₓ</em></span><div class="unit-input"><input id="tx" type="number" min="-40" max="150" step="0.1" inputmode="decimal" value="65"><b>°C</b></div></label>
+          <label class="field"><span>每降 10°C 倍率 <em>Bₜ</em></span><div class="unit-input"><input id="bt" type="number" min="1.01" max="4" step="0.01" inputmode="decimal" value="2"><b>倍</b></div></label>
+        </div>
+
+        <div class="extra" id="measuredFields" hidden><div class="extra-title">紋波（ripple）自熱 · 額定電壓耐久規格 L₀</div><label class="field"><span>實際內部溫升 <em>ΔT</em></span><div class="unit-input"><input id="heat" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="5"><b>°C</b></div></label><p>輸入量測或經熱分析取得的內部溫升；不要直接把電容旁環境溫度差當成 ΔT。</p></div>
+        <div class="extra" id="ratedFields" hidden><div class="extra-title">額定紋波（ripple）耐久規格 Lᵣ</div><div class="field-grid">
+          <label class="field"><span>額定電流自熱 <em>ΔT₀</em></span><div class="unit-input"><input id="ratedHeat" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="5"><b>°C</b></div></label>
+          <label class="field"><span>實際紋波（ripple） <em>Iₓ</em></span><div class="unit-input"><input id="ripple" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="0.8"><b>A rms</b></div></label>
+          <label class="field"><span>額定紋波（ripple） <em>I₀</em></span><div class="unit-input"><input id="ratedRipple" type="number" min="0.001" max="100000" step="0.01" inputmode="decimal" value="1"><b>A rms</b></div></label>
+        </div><p>ΔT₀ 須依系列資料取得；不同頻率的電流應先按該系列係數換算至額定頻率。</p></div>
+
+        <div class="subhead">使用目標</div><div class="field-grid target-fields">
+          <label class="field"><span>目標年數</span><div class="unit-input"><input id="targetYears" type="number" min="0.01" max="100" step="0.1" inputmode="decimal" value="3"><b>年</b></div></label>
+          <label class="field"><span>每天運轉</span><div class="unit-input"><input id="hoursDay" type="number" min="0.01" max="24" step="0.1" inputmode="decimal" value="24"><b>時 / 天</b></div></label>
+          <label class="field"><span>每年運轉</span><div class="unit-input"><input id="daysYear" type="number" min="1" max="365" step="1" inputmode="numeric" value="365"><b>天 / 年</b></div></label>
+        </div>
+        <div id="errors" class="errors" role="alert" hidden></div>
+      </section>
+
+      <section class="panel results" aria-labelledby="result-title"><span class="eyebrow">02 / 即時計算</span><h2 id="result-title">估算結果</h2>
+        <div id="resultContent" aria-live="polite">
+          <div class="hero-result"><span>目前條件的估算壽命</span><strong id="lifeHours">—</strong><span class="result-unit">小時</span><p id="lifeYears">—</p></div>
+          <div class="metric-grid"><div class="metric"><span>目標所需</span><strong id="required">—</strong><small>小時</small></div><div class="metric"><span>允許最高周圍溫度</span><strong id="maxTemp">—</strong><small>°C</small></div></div>
+          <div id="verdict" class="verdict"></div>
+          <div id="context" class="context"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="reference" aria-labelledby="formulas-title"><div class="section-head"><div><span class="eyebrow">03 / 依據與算法</span><h2 id="formulas-title">公式說明</h2></div></div>
+      <div class="formula-cards">
+        <article class="formula-card"><span class="number">A</span><h3>溫度加速經驗式</h3><div class="equation">Lₓ = L₀ · Bₜ<sup>(T₀ − Tₓ)/10</sup></div><p>反推溫度：<strong>Tₓ,max = T₀ − 10 · log<sub>Bₜ</sub>(L<sub>req</sub>/L₀)</strong>。範例：L₀ = 2,000 h、T₀ = 105°C、Bₜ = 2、目標 26,280 h，得到 <strong>67.84°C</strong>。</p></article>
+        <article class="formula-card"><span class="number">B</span><h3>規格不含額定紋波（ripple）</h3><div class="equation">Lₓ = L₀ · 2<sup>(T₀ − Tₓ)/10</sup> · 2<sup>−ΔT/5</sup></div><p>適用於廠商以額定電壓定義耐久規格的貼片／引線液態鋁電解電容。ΔT 是實際紋波（ripple）造成的<strong>內部溫升</strong>。此式採 Nippon Chemi-Con 的自熱修正係數；Bₜ 可調時僅替換周圍溫度項。</p></article>
+        <article class="formula-card"><span class="number">C</span><h3>規格已含額定紋波（ripple）</h3><div class="equation">Lₓ = Lᵣ · 2<sup>(T₀ − Tₓ)/10</sup> · 2<sup>(ΔT₀ − ΔT)/5</sup></div><p>適用於廠商以額定紋波（ripple）電流疊加直流電壓定義耐久規格的貼片／引線液態鋁電解電容。近似 <strong>ΔT = ΔT₀ · (Iₓ/I₀)²</strong>；額定紋波（ripple）已含在 Lᵣ 中，故以兩個自熱值的差修正。</p></article>
+      </div>
+      <div class="method-notes"><h3>使用前核對</h3><ul><li>先查該料號的耐久規格條件、額定紋波（ripple）的頻率與溫度，以及廠商提供的 ΔT₀；不要把 5°C 當所有系列的通用值。</li><li>多頻紋波（ripple）可用 <span class="inline-eq">I<sub>eq</sub> = √Σ(I<sub>f</sub>/F<sub>f</sub>)²</span> 換算；F<sub>f</sub> 必須取自該系列型錄。若有量測內部溫升，優先用實測值。</li><li>本工具的 B、C 式不涵蓋 snap-in、螺絲端子、高壓電壓修正，以及混合／固態聚合物的系列專用式；請用廠商工具或型錄。TDK 亦以系列壽命曲線和紋波（ripple）倍率求值。</li><li>依 Nippon Chemi-Con 指引，低於 40°C 時估算以 40°C 計，超過 15 年的延伸外推不宜當成可保證壽命。高溫、頻繁充放電與超額紋波（ripple）須另核對規格。</li></ul></div>
+      <div class="sources"><h3>廠商資料</h3><a href="https://www.chemi-con.co.jp/en/faq/detail.php?id=alLifetime" target="_blank" rel="noopener">Nippon Chemi-Con · 壽命與紋波（ripple）公式</a><a href="https://www.tdk-electronics.tdk.com/download/530704/6ad5ed9e1ff4f727c328cb92da2adf2b/pdf-generaltechnicalinformation.pdf" target="_blank" rel="noopener">TDK · 技術資料與系列壽命曲線</a><a href="https://www.chemi-con.co.jp/products/relatedfiles/capacitor/catalog/al-lifetimehybrid-e.pdf" target="_blank" rel="noopener">Nippon Chemi-Con · Hybrid 系列專用式</a><a href="https://www.chemi-con.co.jp/products/relatedfiles/capacitor/catalog/al-lifetimecp-e.pdf" target="_blank" rel="noopener">Nippon Chemi-Con · 固態聚合物專用式</a></div>
+    </section>
+    <footer>估算值供元件選型與熱設計初篩，實際壽命需依料號、應用條件與廠商資料確認。</footer>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
