@@ -1,4 +1,4 @@
-import {calculate} from './calc.mjs';
+import {calculate} from './calc.mjs?v=1.1';
 
 const ids=['lo','to','tx','bt','targetYears','hoursDay','daysYear','heat','ratedHeat','ripple','ratedRipple'];
 const fields=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
@@ -54,4 +54,5 @@ document.querySelectorAll('input[name=mode]').forEach(el=>el.addEventListener('c
 ids.forEach(id=>fields[id].addEventListener('input',update));
 $('reset').addEventListener('click',()=>{mode='simple';document.querySelector('input[name=mode][value=simple]').checked=true;for(const id of ids)fields[id].value=defaults[id];update()});
 update();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));
+

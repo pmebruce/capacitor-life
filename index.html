@@ -10,7 +10,7 @@
   <link rel="manifest" href="./manifest.webmanifest?v=4">
   <link rel="icon" href="./icon-192.png" type="image/png">
   <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=1.1">
   <title>電容壽命計算器</title>
 <style id="toolbox-typography-v2">
 /* Toolbox typography v2: original tools 11/12 reading scale, compact calculation notes. */
@@ -85,8 +85,10 @@ header.tool-hero h1{font-size:25px!important}
 </style></head>
 <body>
   <main class="shell">
-    <header class="tool-hero"><div class="tool-hero-nav"><a class="tool-home-link" href="https://pmebruce.github.io/engineering-toolbox/">← 工程工具箱</a><button class="tool-install" type="button" onclick="if(window.matchMedia('(display-mode: standalone)').matches){this.textContent='已安裝'}else{alert('iPhone：請點 Safari 的「分享」，再選「加入主畫面」。\\nAndroid：請在瀏覽器選單選擇「安裝應用程式」。')}">加入主畫面</button></div><div class="tool-hero-main"><img class="tool-hero-logo" src="./icon-192.png" alt=""><div class="tool-hero-copy"><div class="tool-kicker">CAPACITOR / LIFETIME</div><h1>電容壽命計算器</h1></div></div><p class="tool-hero-description">依環境溫度、額定壽命與紋波自熱估算鋁電解電容壽命。</p></header>
+    <header class="tool-hero"><div class="tool-hero-nav"><a class="tool-home-link" href="https://pmebruce.github.io/engineering-toolbox/">← 工程工具箱</a><button class="tool-install" type="button" onclick="if(window.matchMedia('(display-mode: standalone)').matches){this.textContent='已安裝'}else{alert('iPhone：請點 Safari 的「分享」，再選「加入主畫面」。\\nAndroid：請在瀏覽器選單選擇「安裝應用程式」。')}">加入主畫面</button></div><div class="tool-hero-main"><img class="tool-hero-logo" src="./icon-192.png" alt=""><div class="tool-hero-copy"><div class="tool-kicker">CAPACITOR / LIFETIME</div><h1>電容壽命計算器</h1></div></div><p class="tool-hero-description">估算電容壽命、紋波損耗與內部自熱，輔助熱設計。</p></header>
 
+    <div class="cap-tabs" role="tablist" aria-label="電容工具"><button id="tab-life" type="button" role="tab" aria-selected="true" aria-controls="panel-life">電容壽命</button><button id="tab-loss" type="button" role="tab" aria-selected="false" aria-controls="panel-loss" tabindex="-1">電容損耗</button></div>
+<section id="panel-life" role="tabpanel" aria-labelledby="tab-life">
     <div class="workspace">
       <section class="panel controls" aria-labelledby="inputs-title">
         <div class="section-head"><div><span class="eyebrow">01 / 輸入條件</span><h2 id="inputs-title">壽命條件</h2></div><button id="reset" type="button" class="quiet">重設範例</button></div>
@@ -139,8 +141,32 @@ header.tool-hero h1{font-size:25px!important}
       <div class="method-notes"><h3>使用前核對</h3><ul><li>先查該料號的耐久規格條件、額定紋波（ripple）的頻率與溫度，以及廠商提供的 ΔT₀；不要把 5°C 當所有系列的通用值。</li><li>多頻紋波（ripple）可用 <span class="inline-eq">I<sub>eq</sub> = √Σ(I<sub>f</sub>/F<sub>f</sub>)²</span> 換算；F<sub>f</sub> 必須取自該系列型錄。若有量測內部溫升，優先用實測值。</li><li>本工具的 B、C 式不涵蓋 snap-in、螺絲端子、高壓電壓修正，以及混合／固態聚合物的系列專用式；請用廠商工具或型錄。TDK 亦以系列壽命曲線和紋波（ripple）倍率求值。</li><li>依 Nippon Chemi-Con 指引，低於 40°C 時估算以 40°C 計，超過 15 年的延伸外推不宜當成可保證壽命。高溫、頻繁充放電與超額紋波（ripple）須另核對規格。</li></ul></div>
       <div class="sources"><h3>廠商資料</h3><a href="https://www.chemi-con.co.jp/en/faq/detail.php?id=alLifetime" target="_blank" rel="noopener">Nippon Chemi-Con · 壽命與紋波（ripple）公式</a><a href="https://www.tdk-electronics.tdk.com/download/530704/6ad5ed9e1ff4f727c328cb92da2adf2b/pdf-generaltechnicalinformation.pdf" target="_blank" rel="noopener">TDK · 技術資料與系列壽命曲線</a><a href="https://www.chemi-con.co.jp/products/relatedfiles/capacitor/catalog/al-lifetimehybrid-e.pdf" target="_blank" rel="noopener">Nippon Chemi-Con · Hybrid 系列專用式</a><a href="https://www.chemi-con.co.jp/products/relatedfiles/capacitor/catalog/al-lifetimecp-e.pdf" target="_blank" rel="noopener">Nippon Chemi-Con · 固態聚合物專用式</a></div>
     </section>
-    <footer>估算值供元件選型與熱設計初篩，實際壽命需依料號、應用條件與廠商資料確認。</footer>
+</section>
+<section id="panel-loss" role="tabpanel" aria-labelledby="tab-loss" hidden>
+<div class="workspace loss-workspace"><section class="panel controls"><div class="section-head"><div><span class="eyebrow">01 / 電容損耗</span><h2>損耗計算條件</h2></div><button id="loss-reset" class="quiet" type="button">重設範例</button></div>
+<label class="field loss-method"><span>計算算法</span><select id="loss-method"><option value="esr">單一 ESR · I² × ESR</option><option value="spectrum">多頻紋波 · Σ I² × ESR(f)</option><option value="tand">損耗角 tanδ · 換算 ESR</option></select></label>
+<p id="loss-help" class="mode-help"></p>
+<div id="loss-single" class="field-grid"><label class="field"><span>紋波（ripple）電流</span><div class="unit-input"><input id="loss-current" type="number" step="any" min="0" value="0.8"><b>A rms</b></div></label><label class="field"><span>等效串聯電阻 ESR</span><div class="unit-input"><input id="loss-esr" type="number" step="any" min="0" value="100"><b>mΩ</b></div></label></div>
+<div id="loss-frequency-field"><label class="field"><span>資料對應頻率</span><div class="unit-input"><input id="loss-frequency" type="number" step="any" min="0" value="120"><b>Hz</b></div></label></div>
+<div id="loss-spectrum-fields" hidden><label class="field"><span>各頻率成分：Hz、A rms、ESR mΩ</span><textarea id="loss-spectrum" rows="5" spellcheck="false">120, 0.8, 200
+100000, 0.5, 40</textarea></label><p class="loss-note">每列一個頻率，可用逗號、空白或 Tab 分隔。填入電容支路的 RMS 電流，不能直接填 FFT 峰值。不同頻率按能量加總；同頻成分須先合成。</p></div>
+<div id="loss-tand-fields" hidden><div class="field-grid"><label class="field"><span>電容量 C</span><div class="unit-input"><input id="loss-capacitance" type="number" step="any" min="0" value="470"><b>µF</b></div></label><label class="field"><span>損耗角正切 tanδ</span><div class="unit-input"><input id="loss-tand" type="number" step="any" min="0" value="0.1"><b>比值</b></div></label></div><p class="loss-note">tanδ 填無單位比值，例如 10% 填 0.1。須與上方頻率及工作溫度相符。</p><label class="field"><span>已知的紋波資料</span><select id="loss-drive"><option value="current">電流 · A rms</option><option value="voltage">電容端 AC 電壓 · V rms</option></select></label><label class="field" id="loss-tand-current-field"><span>紋波（ripple）電流</span><div class="unit-input"><input id="loss-tand-current" type="number" step="any" min="0" value="0.8"><b>A rms</b></div></label><label class="field" id="loss-voltage-field" hidden><span>電容端 AC 電壓（不含 DC）</span><div class="unit-input"><input id="loss-voltage" type="number" step="any" min="0" value="2"><b>V rms</b></div></label></div>
+<div class="loss-extra"><label class="loss-check"><input id="loss-leak-enabled" type="checkbox">加入 DC 漏電損耗</label><div class="field-grid" id="loss-leak-fields" hidden><label class="field"><span>實際 DC 電壓</span><div class="unit-input"><input id="loss-dc-voltage" type="number" step="any" min="0" value="400"><b>V</b></div></label><label class="field"><span>DC 漏電流</span><div class="unit-input"><input id="loss-leak-current" type="number" step="any" min="0" value="10"><b>µA</b></div></label></div><p class="loss-note">漏電流請依實際電壓、溫度及通電時間取得；型錄上限代入會得到保守值。</p></div>
+<div class="loss-extra"><label class="field"><span>內部熱點至周圍熱阻（選填）</span><div class="unit-input"><input id="loss-theta" type="number" step="any" min="0" placeholder="有可信熱阻時才填"><b>K/W</b></div></label><p class="loss-note">用總損耗估算穩態內部溫升。外殼至周圍熱阻不能直接當作內部熱點熱阻；工作溫度下的 ESR 需另行核對。</p></div>
+<div id="loss-errors" class="errors" role="alert" hidden></div></section>
+<section class="panel results"><span class="eyebrow">02 / 即時計算</span><h2>單顆電容損耗</h2><div id="loss-results" aria-live="polite"><div class="hero-result"><span>總發熱功率</span><strong id="loss-total">—</strong><span class="result-unit">W</span><p id="loss-milli">—</p></div><div class="metric-grid"><div class="metric"><span>AC 紋波損耗</span><strong id="loss-ac">—</strong><small>W</small></div><div class="metric"><span>DC 漏電損耗</span><strong id="loss-dc">—</strong><small>W</small></div></div><p id="loss-details" class="loss-note"></p><div id="loss-breakdown"></div><div class="loss-heat-result"><span>穩態內部溫升 ΔT</span><strong id="loss-delta">—</strong><p id="loss-transfer-help" class="loss-note">填入可信熱阻後可估算溫升。</p><button id="loss-transfer" type="button" disabled>套用溫升至壽命分頁</button></div><p class="loss-note">預填為算法示範，非產品規格。電流是單顆電容支路電流；多顆並聯請依實際電流分配逐顆計算。</p></div></section></div>
+<section class="reference loss-formulas"><div class="section-head"><div><span class="eyebrow">03 / 公式與適用條件</span><h2>電容損耗公式</h2></div></div><div class="formula-cards">
+<article class="formula-card"><span class="number">A</span><h3>單一 ESR</h3><div class="equation">P<sub>AC</sub> = I<sub>rms</sub>² · ESR</div><p>ESR 用 Ω，電流用 A rms，結果為 W。mΩ 需乘 10⁻³。適用於單頻主導，或 ESR 在所含頻率範圍近似不變。使用該頻率及工作溫度的 ESR；ESR 不是阻抗幅值 |Z|。</p></article>
+<article class="formula-card"><span class="number">B</span><h3>多頻紋波分項加總</h3><div class="equation">P<sub>AC</sub> = Σ I<sub>k,rms</sub>² · ESR(f<sub>k</sub>)<br>I<sub>total,rms</sub> = √Σ I<sub>k,rms</sub>²</div><p>每個頻率使用各自 ESR；假設穩態、不同頻率成分正交。型錄紋波電流的頻率修正係數，不等於 ESR 倍率。高頻與低頻 ESR 不同時，不能直接拿總 RMS 乘任意單一 ESR。</p></article>
+<article class="formula-card"><span class="number">C</span><h3>由 tanδ 換算</h3><div class="equation">ω = 2πf；X<sub>C</sub> = 1/(ωC)<br>ESR = tanδ/(ωC)<br>P<sub>AC</sub> = I<sub>rms</sub>² · ESR</div><p>採串聯 C–ESR 模型，適用於低於自諧振、仍呈電容性的單頻條件。C 用 F，µF 乘 10⁻⁶。型錄 120 Hz 的 tanδ 不能直接用於開關頻率。</p><div class="equation">已知端電壓：<br>P<sub>AC</sub> = V<sub>AC,rms</sub>² · ωC · tanδ / (1 + tan²δ)</div><p>端 AC 電壓不含 DC。當 tanδ 很小時，近似為 V²ωCtanδ；工具保留分母修正，且不計 ESL。若 tanδ 已代表總等效損耗，不再加一次 ESR 損耗，以免重複計算。</p></article>
+<article class="formula-card"><span class="number">D</span><h3>漏電與內部溫升</h3><div class="equation">P<sub>DC</sub> = V<sub>DC</sub> · I<sub>leak</sub><br>P<sub>total</sub> = P<sub>AC</sub> + P<sub>DC</sub><br>ΔT = P<sub>total</sub> · R<sub>θ,hotspot–ambient</sub></div><p>漏電流 µA 乘 10⁻⁶。溫升為指定熱阻與固定電氣參數的穩態估算；不自動迭代 ESR 隨溫度變化。僅知道額定紋波電流，無法唯一求出損耗 W，仍需要 ESR、tanδ 或可信熱資料。</p></article></div>
+<div class="sources"><h3>原廠依據</h3><a href="https://www.tdk-electronics.tdk.com/download/3669958/001151774afe321a6036969b42431e69/tp-practical-use.pdf" target="_blank" rel="noopener">TDK · DC-link 電容 ESR 與頻譜損耗</a><a href="https://www.tdk-electronics.tdk.com/en/530312/products/product-catalog/components-for-power-factor-correction-and-harmonic-filtering/pfc-glossary" target="_blank" rel="noopener">TDK · tanδ 與 ESR 定義</a><a href="https://www.nichicon.co.jp/english/products/pdf/aluminum-e.pdf" target="_blank" rel="noopener">Nichicon · 紋波、自熱與頻率條件</a></div></section>
+</section>
+
+    <footer>v1.1 · 估算值供元件選型與熱設計初篩，實際壽命需依料號、應用條件與廠商資料確認。</footer>
   </main>
-  <script type="module" src="./main.js"></script>
+  <script type="module" src="./main.js?v=1.1"></script>
+<script type="module" src="./loss.js?v=1.1"></script>
 </body>
 </html>
+
